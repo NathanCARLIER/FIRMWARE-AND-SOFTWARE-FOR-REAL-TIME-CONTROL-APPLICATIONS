@@ -1,0 +1,77 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date: 04.05.2022 15:35:49
+-- Design Name: 
+-- Module Name: BoardTestVHDL - Behavioral
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: 
+-- 
+-- Dependencies: 
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
+-- 
+----------------------------------------------------------------------------------
+
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+Library UNISIM;
+use UNISIM.vcomponents.all;
+
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+use IEEE.NUMERIC_STD.ALL;
+
+entity BoardTestVHDL is
+
+    Port ( 
+   
+    sysclk_p    : in std_logic;
+    sysclk_n    : in std_logic;
+    O           : inout std_logic;
+
+    btnd        : in std_logic;
+    d_btnd      : inout std_logic := '0';
+    
+    led2        : inout std_logic := '0'
+
+    );
+end BoardTestVHDL;
+
+architecture Behavioral of BoardTestVHDL is
+
+begin
+
+   IBUFDS_inst : IBUFDS
+   generic map (
+      DIFF_TERM => FALSE, -- Differential Termination 
+      IBUF_LOW_PWR => TRUE, -- Low power (TRUE) vs. performance (FALSE) setting for referenced I/O standards
+      IOSTANDARD => "DEFAULT")
+   port map (
+      O     => O,  -- Buffer output
+      I     => sysclk_p,  -- Diff_p buffer input (connect directly to top-level port)
+      IB    => sysclk_n -- Diff_n buffer input (connect directly to top-level port)
+   );
+   
+   i_debouncer : entity work.debouncer
+   port map (
+     clk    => O, 
+     bouton => btnd,
+     output => d_btnd 
+   );
+
+ process(d_btnd)
+ begin
+        if falling_edge(d_btnd) then
+            led2 <= not led2;
+        end if;
+ end process;
+
+end Behavioral;

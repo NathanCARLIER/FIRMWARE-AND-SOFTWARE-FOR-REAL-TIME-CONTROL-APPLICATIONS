@@ -1,0 +1,101 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date: 12.05.2022 10:40:58
+-- Design Name: 
+-- Module Name: debouncer - Behavioral
+-- Project Name: 
+-- Target Devices: 
+-- Tool Versions: 
+-- Description: 
+-- 
+-- Dependencies: 
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
+-- 
+----------------------------------------------------------------------------------
+
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity debouncer is
+  Port ( 
+  
+  clk       : in std_logic;
+  bouton    : in std_logic;
+  
+  output    : out std_logic
+  
+  );
+end debouncer;
+
+architecture Behavioral of debouncer is
+
+signal count : integer := 0;
+constant COUNT_MAX : integer := 200000; 
+
+type state_type is (Off_Idle,Off_Trans,On_Idle,On_Trans); --state machine
+signal state : state_type := Off_Idle;
+
+begin
+
+   process(clk)
+   begin
+   
+       if rising_edge(clk) then
+       
+          
+          if(state = Off_Trans) then
+                count <= count+1;
+          end if;
+            
+          if(state = On_Trans) then
+                count <= count+1;
+          end if;
+          
+          case (state) is
+          
+                when Off_Idle =>
+                
+                    output <= '0';
+                    count <= 0;
+                    if(bouton = '1') then
+                        state <= Off_Trans;
+                    end if;
+           
+                when Off_Trans =>
+                
+                    if(bouton /= '1') then
+                        state <= Off_Idle;
+                        else if(count = COUNT_MAX) then
+                                state <= On_Idle;
+                        end if;
+                    end if;
+                    
+                when On_Idle =>
+                    
+                    count <= 0;
+                    output <= '1';
+                    if(bouton /= '1') then
+                        state <= On_Trans;
+                    end if;
+                    
+                when On_Trans =>
+                
+                    if(bouton = '1') then
+                        state <= On_Idle;
+                        else if(count = COUNT_MAX) then
+                            state <= Off_Idle;
+                        end if;
+                    end if;
+           end case; 
+                  
+       end if;
+       
+   end process;
+
+end Behavioral;
